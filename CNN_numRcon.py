@@ -83,6 +83,7 @@ def test(model, testDataLoader, loss_fc):
 
 loss_list = []
 loss_list_test = []
+
 for epoch in range(epochs):
     l1 = train(model, trainDataLoader, loss_fc, optimizer)
     l2, acc = test(model, testDataLoader, loss_fc)
@@ -90,7 +91,7 @@ for epoch in range(epochs):
     loss_list.append(l1)
     loss_list_test.append(l2)
 
-torch.save(model.state_dict(), "./module")
+torch.save(model.state_dict(), "./module/CNN_numRcon.pth")
 
 # 数据可视化
 plt.plot(loss_list, label="train loss")
@@ -100,3 +101,16 @@ plt.ylabel("loss")
 plt.legend()
 plt.show()
 
+
+'''
+epoch:1, train loss:2.2905, test loss:2.2704, acc:30.1300
+epoch:2, train loss:2.1964, test loss:1.9776, acc:68.6900
+epoch:3, train loss:1.0386, test loss:0.4883, acc:85.3800
+epoch:4, train loss:0.4236, test loss:0.3509, acc:89.1500
+epoch:5, train loss:0.3306, test loss:0.2773, acc:91.6100
+epoch:6, train loss:0.2762, test loss:0.2525, acc:92.2900
+epoch:7, train loss:0.2379, test loss:0.2288, acc:93.1600
+epoch:8, train loss:0.2068, test loss:0.1892, acc:94.3500
+epoch:9, train loss:0.1829, test loss:0.1579, acc:95.2000
+epoch:10, train loss:0.1635, test loss:0.1502, acc:95.1400
+'''

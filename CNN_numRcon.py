@@ -101,7 +101,6 @@ plt.ylabel("loss")
 plt.legend()
 plt.show()
 
-
 '''
 epoch:1, train loss:2.2905, test loss:2.2704, acc:30.1300
 epoch:2, train loss:2.1964, test loss:1.9776, acc:68.6900

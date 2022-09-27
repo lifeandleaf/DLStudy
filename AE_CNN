@@ -81,13 +81,8 @@ for epoch in range(epochs):
     for step, (x, b_label) in enumerate(train_loader):
         # b_x = x.view(-1, 28*28)
         # b_y = x.view(-1, 28*28)
-        # print(x.shape)
-        # print(b_label.shape)
 
         encoded, decoded = autoencoder(x)
-
-        # print(encoded.shape)
-        # print(decoded.shape)
 
         loss = loss_fc(decoded, x)
         optimizer.zero_grad()
@@ -110,3 +105,7 @@ for epoch in range(epochs):
 plt.ioff()
 plt.show()
 
+'''
+Epoch:9,| train loss:0.0282
+Epoch:9,| train loss:0.0285
+'''

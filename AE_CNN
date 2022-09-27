@@ -1,0 +1,112 @@
+import torch
+import torch.nn as nn
+import torch.utils.data as Data
+import torchvision
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+import numpy as np
+
+epochs = 10
+batch_size = 64
+lr = 0.005
+DOWNLOAD_MNIST = False
+N_TEST_IMG = 5
+
+train_data = torchvision.datasets.MNIST(
+    root='./dataset',
+    train=True,
+    transform=torchvision.transforms.ToTensor(),
+    download=True
+)
+
+# print(train_data.data.size())
+# print(train_data.targets.size())
+
+plt.imshow(train_data.data[2].numpy(), cmap='gray')
+plt.title('%i' % train_data.targets[2])
+plt.show()
+
+train_loader = Data.DataLoader(dataset=train_data, batch_size=batch_size, shuffle=True)
+
+class AutoEncoder(nn.Module):
+    def __init__(self):
+        super(AutoEncoder, self).__init__()
+
+        self.encoder = nn.Sequential(
+            # input size is 28 * 28
+            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3, stride=3, padding=1),
+            # 16 * 10 * 10
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            # 16 * 5 * 5
+            nn.Conv2d(in_channels=16, out_channels=8, kernel_size=3, stride=2, padding=1),
+            # 8 * 3 * 3
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=1)
+            # out size is 8 * 2 * 2
+        )
+        self.decoder = nn.Sequential(
+            # input size is 8 * 2 * 2
+            nn.ConvTranspose2d(in_channels=8, out_channels=16, kernel_size=3, stride=2),
+            # 16 * 5 * 5
+            nn.ReLU(),
+            nn.ConvTranspose2d(in_channels=16, out_channels=8, kernel_size=5, stride=3, padding=1),
+            # 8 * 15 * 15
+            nn.ReLU(),
+            nn.ConvTranspose2d(in_channels=8, out_channels=1, kernel_size=2, stride=2, padding=1),
+            nn.Tanh()
+            # 1 * 28 * 28
+        )
+
+    def forward(self, x):
+        encoded = self.encoder(x)
+        decoded = self.decoder(encoded)
+        return encoded, decoded
+
+autoencoder = AutoEncoder()
+
+optimizer = torch.optim.Adam(autoencoder.parameters(), lr=lr)
+loss_fc = nn.MSELoss()
+
+f, a = plt.subplots(2, N_TEST_IMG, figsize=(5, 2))
+plt.ion()
+
+view_data = train_data.data[:N_TEST_IMG].view(5, 1, 28, 28).type(torch.FloatTensor) / 255
+for i in range(N_TEST_IMG):
+    a[0][i].imshow(np.reshape(view_data.data.numpy()[i], (28, 28)), cmap='gray')
+    a[0][i].set_xticks(()); a[0][i].set_yticks(())
+
+for epoch in range(epochs):
+    for step, (x, b_label) in enumerate(train_loader):
+        # b_x = x.view(-1, 28*28)
+        # b_y = x.view(-1, 28*28)
+        # print(x.shape)
+        # print(b_label.shape)
+
+        encoded, decoded = autoencoder(x)
+
+        # print(encoded.shape)
+        # print(decoded.shape)
+
+        loss = loss_fc(decoded, x)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        if step % 100 == 0:
+            print("Epoch:{},| train loss:{:.4f}".format(epoch, loss.data.numpy()))
+
+            # print(view_data.shape)
+            _, decoder_data = autoencoder(view_data)
+            for i in range(N_TEST_IMG):
+                a[1][i].clear()
+                a[1][i].imshow(np.reshape(decoder_data.data.numpy()[i], (28, 28)), cmap='gray')
+                a[1][i].set_xticks(())
+                a[1][i].set_yticks(())
+            plt.draw()
+            plt.pause(0.02)
+
+plt.ioff()
+plt.show()
+
